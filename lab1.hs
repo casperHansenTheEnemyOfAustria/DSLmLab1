@@ -16,20 +16,20 @@ data PRED v = Subset (TERM v) (TERM v)             -- Constructor for subset of 
 
 
 
-newtype Set = S [Set] deriving Eq
-type Env var dom = [(var,dom)]
+newtype Set = S [Set] deriving Eq -- Set is a list of sets
+type Env var dom = [(var,dom)] -- Environment is a list of pairs of variables and their corresponding domain
 
 eval :: Eq v => Env v Set -> TERM v -> Set
 eval _ EmptySet = S [] -- Evaluate the empty set to an empty set
 eval env (SingletonSet x) = case lookup x env of
     Just set -> set -- Evaluate a variable to its corresponding set
     Nothing -> S [] -- Default to an empty set if the variable is not in the environment
-eval env (UnionSet t1 t2) = unionSets (eval env t1) (eval env t2)
-eval env (IntersectionSet t1 t2) = intersectSets (eval env t1) (eval env t2)
-eval env (VarSet x) = case lookup x env of
+eval env (UnionSet t1 t2) = unionSets (eval env t1) (eval env t2) -- Evaluate the union of two sets
+eval env (IntersectionSet t1 t2) = intersectSets (eval env t1) (eval env t2) -- Evaluate the intersection of two sets
+eval env (VarSet x) = case lookup x env of -- Evaluate a variable to its corresponding set
     Just set -> set
     Nothing -> S []
-eval _ (VN n) = vnEnc n
+eval env (VN n) = vnEnc n                 -- Evaluate a von neumann encoded natural number to its corresponding set   
 
 unionSets :: Set -> Set -> Set
 unionSets (S set1) (S set2) = S (set1 ++ set2)
@@ -38,14 +38,18 @@ intersectSets :: Set -> Set -> Set
 intersectSets (S set1) (S set2) = S [x | x <- set1, x `elem` set2]
 
 
+
 check  :: Eq v => Env v Set -> PRED v -> Bool
-check env (Subset t1 t2) =
-    isSubset (eval env t1) (eval env t2)
-check env (ElementOf t1 t2) =
-    elementOf (eval env t1) (eval env t2)
+check env (Subset t1 t2) = isSubset (eval env t1) (eval env t2)
+check env (ElementOf t1 t2) = elementOf (eval env t1) (eval env t2)
+check env (Not p) = not (check env p)
+check env (And p1 p2) = check env p1 && check env p2
+check env (Or p1 p2) = check env p1 || check env p2
+check env (Implies p1 p2) = not (check env p1) || check env p2
 
 
 
+-- helmpers for checking if its a subset or an element of a set
 isSubset :: Set -> Set -> Bool
 isSubset (S set1) (S set2) = all (`elem` set2) set1
 
@@ -61,15 +65,17 @@ instance Show Set where
 --  von neumann encoding of natural numbers
 vnEnc :: Integer -> Set
 vnEnc n
-    | n == 0 = S []
-    | otherwise = unionSets (vnEnc (n - 1)) (S [vnEnc (n - 1)])
+    | n == 0 = S [] -- case when n is zero return the empty set
+    | otherwise = unionSets (vnEnc (n - 1)) (S [vnEnc (n - 1)]) -- recursive case (tail rec?)
+
+-- claims 
 
 
 
 
 
 
-    
+
 
 
 
