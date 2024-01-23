@@ -2,7 +2,7 @@ module Lab1 where
 import Data.List
  -- part1 constructors for set theory
 data TERM v = EmptySet                             -- Constructor for the empty set
-            | SingletonSet v                       -- Constructor for a singleton set with a variable
+            | SingletonSet (TERM v)                -- Constructor for a singleton set with a variable
             | UnionSet (TERM v) (TERM v)           -- Constructor for the union of two sets
             | IntersectionSet (TERM v) (TERM v)    -- Constructor for the intersection of two sets
             | VarSet v                             -- Constructor for a set variable
@@ -23,19 +23,19 @@ type Env var dom = [(var,dom)]    -- Environment is a list of pairs of variables
 
 eval :: Eq v => Env v Set -> TERM v -> Set
 eval _ EmptySet = S [] -- Evaluate the empty set to an empty set
-eval env (SingletonSet x) = case lookup x env of
-    Just set -> set -- Evaluate a variable to its corresponding set
-    Nothing -> S [] -- Default to an empty set if the variable is not in the environment
+eval env (SingletonSet t) = eval env t
 eval env (UnionSet t1 t2) = unionSets (eval env t1) (eval env t2) -- Evaluate the union of two sets
 eval env (IntersectionSet t1 t2) = intersectSets (eval env t1) (eval env t2) -- Evaluate the intersection of two sets
 eval env (VarSet x) = case lookup x env of -- Evaluate a variable to its corresponding set
     Just set -> set
     Nothing -> S []
-eval env (VN n) = vnEnc n                 -- Evaluate a von neumann encoded natural number to its corresponding set   
+eval env (VN n) = eval env (vonNeumann n)                -- Evaluate a von neumann encoded natural number to its corresponding set   
 
 unionSets :: Set -> Set -> Set
 unionSets (S set1) (S set2) = S $ union set1 set2
 --unionSets (S set1) (S set2) = S (set1 ++ set2) use union instead of concat?
+
+
 intersectSets :: Set -> Set -> Set
 intersectSets (S set1) (S set2) = S [x | x <- set1, x `elem` set2]
 
@@ -59,16 +59,24 @@ elementOf x (S setX) = x `elem` setX
 
 -- show function for sets
 instance Show Set where
-    show :: Set -> String
+--    show :: Set -> String
     show (S []) = "{}"
     show (S [x]) = "{" ++ show x ++ "}"
     show (S (x:xs)) = "{" ++ show x ++ "," ++ show (S xs) ++ "}"
 
+{-
 --  von neumann encoding of natural numbers
 vnEnc :: Integer -> Set
 vnEnc n
     | n == 0 = S [] -- case when n is zero return the empty set
     | otherwise = unionSets (vnEnc (n - 1)) (S [vnEnc (n - 1)]) -- recursive case (tail rec?)
+-}
+
+-- This von neumann function matches the one in the description better!
+vonNeumann :: Integer -> TERM v
+vonNeumann n
+    | n == 0 = EmptySet -- Base case
+    | otherwise = UnionSet (vonNeumann (n - 1)) (SingletonSet (vonNeumann (n - 1)))
 
 -- claims 
 claim1 :: Set -> Set -> Bool
