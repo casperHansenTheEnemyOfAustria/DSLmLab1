@@ -26,27 +26,44 @@ eval _ EmptySet = S [] -- Evaluate the empty set to an empty set
 eval env (SingletonSet t) = eval env t
 eval env (UnionSet t1 t2) = unionSets (eval env t1) (eval env t2) -- Evaluate the union of two sets
 eval env (IntersectionSet t1 t2) = intersectSets (eval env t1) (eval env t2) -- Evaluate the intersection of two sets
-eval env (VarSet x) = case lookup x env of -- Evaluate a variable to its corresponding set
+eval env (VarSet x) = case lookup x env  of -- Evaluate a variable to its corresponding set
     Just set -> set
     Nothing -> S []
 eval env (VN n) = eval env (vonNeumann n)                -- Evaluate a von neumann encoded natural number to its corresponding set   
 
+-- possibly better solution
+-- eval :: Eq v => Env v Set -> TERM v -> Set
+-- eval env = teval
+--     where
+--         teval  EmptySet = S [] -- Evaluate the empty set to an empty set
+--         teval  (SingletonSet t) = teval t
+--         teval (UnionSet t1 t2) = unionSets (teval t1) (teval t2) -- Evaluate the union of two sets
+--         teval (IntersectionSet t1 t2) = intersectSets (teval t1) (teval t2) -- Evaluate the intersection of two sets
+--         teval (VarSet x) = case lookup x env  of -- Evaluate a variable to its corresponding set
+--             Just set -> set
+--             Nothing -> S []
+--         teval (VN n) = teval (vonNeumann n)        
+
+
 unionSets :: Set -> Set -> Set
 unionSets (S set1) (S set2) = S $ union set1 set2
---unionSets (S set1) (S set2) = S (set1 ++ set2) use union instead of concat?
+--unionSets (S set1) (S set2) = S (set1 ++ set2) use union instead of concat? 
 
 
 intersectSets :: Set -> Set -> Set
 intersectSets (S set1) (S set2) = S [x | x <- set1, x `elem` set2]
 
 
+
 check  :: Eq v => Env v Set -> PRED v -> Bool
+
 check env (Subset t1 t2) = isSubset (eval env t1) (eval env t2)
 check env (ElementOf t1 t2) = elementOf (eval env t1) (eval env t2)
 check env (Not p) = not (check env p)
 check env (And p1 p2) = check env p1 && check env p2
 check env (Or p1 p2) = check env p1 || check env p2
 check env (Implies p1 p2) = not (check env p1) || check env p2
+
 
 
 
@@ -80,10 +97,11 @@ vonNeumann n
 
 -- claims 
 claim1 :: Set -> Set -> Bool
-claim1 n1 n2 = undefined
+claim1 n1 n2 = isSubset n1 n2 && isSubset n2 n1
 
 claim2 :: Set -> Bool
 claim2 = undefined
+
 
 
 
