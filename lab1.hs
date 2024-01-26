@@ -7,7 +7,7 @@ data TERM v = EmptySet                             -- Constructor for the empty 
             | UnionSet (TERM v) (TERM v)           -- Constructor for the union of two sets
             | IntersectionSet (TERM v) (TERM v)    -- Constructor for the intersection of two sets
             | VarSet v                             -- Constructor for a set variable
-            | VN Integer       
+            | VN Integer
             deriving(Show)                    -- Constructor for a von neumann encoded natural number
 
 data PRED v = Con (Bool)
@@ -16,7 +16,7 @@ data PRED v = Con (Bool)
             | Not (PRED v)                         -- Constructor for negation of a predicate
             | And (PRED v) (PRED v)                -- Constructor for conjunction of two predicates
             | Or (PRED v) (PRED v)                 -- Constructor for disjunction of two predicates
-            | Implies (PRED v) (PRED v)   
+            | Implies (PRED v) (PRED v)
             deriving(Show)         -- Constructor for implication of two predicates
 
 
@@ -97,7 +97,7 @@ vnEnc n
 -}
 
 -- This von neumann function matches the one in the description better!
-vonNeumann :: Integer -> TERM v
+vonNeumann :: Integer -> TERM Integer
 vonNeumann n
     | n == 0 = EmptySet -- Base case
     | otherwise = UnionSet (vonNeumann (n - 1)) (SingletonSet (vonNeumann (n - 1)))
@@ -111,13 +111,13 @@ claim1 :: Integer -> Integer -> Bool
 claim1 n1 n2 = check envEval (Implies  (Con (n1 <= n2) ) (Subset (VN n1) (VN n2)))
 
 claim2 :: Integer -> Bool
-claim2 n =  check envEval (And  (Subset (VN n) (SingletonSet (createNumSet n))) (Subset (SingletonSet (createNumSet n)) (VN n)))
+claim2 n = check envEval (Subset (VN n) (createNumSet n) ) && check envEval (Subset (createNumSet n) (VN n))
 
 
 createNumSet :: Integer -> TERM Integer
-createNumSet 0 = VarSet 0
-createNumSet n = (UnionSet (createNumSet ( n - 1)) (VarSet (n - 1)))
-        
+createNumSet 0 = VN 0
+createNumSet n = UnionSet (createNumSet (n - 1)) (VN (n - 1))
+
 
 
 --  claim1 1 2 
