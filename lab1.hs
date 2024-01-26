@@ -115,7 +115,7 @@ claim2 n = check envEval (Subset (VN n) (createNumSet n) ) && check envEval (Sub
 
 
 createNumSet :: Integer -> TERM Integer
-createNumSet 0 = VN 0
+createNumSet 0 = EmptySet
 createNumSet n = UnionSet (createNumSet (n - 1)) (VN (n - 1))
 
 
