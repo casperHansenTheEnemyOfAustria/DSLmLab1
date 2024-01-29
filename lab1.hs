@@ -1,6 +1,5 @@
 module Lab1 where
 import Data.List
-import Distribution.Simple.Program.Ar (createArLibArchive)
  -- part1 constructors for set theory
 data TERM v = EmptySet                             -- Constructor for the empty set
             | SingletonSet (TERM v)                -- Constructor for a singleton set with a variable
@@ -8,16 +7,16 @@ data TERM v = EmptySet                             -- Constructor for the empty 
             | IntersectionSet (TERM v) (TERM v)    -- Constructor for the intersection of two sets
             | VarSet v                             -- Constructor for a set variable
             | VN Integer
-            deriving(Show)                    -- Constructor for a von neumann encoded natural number
+            deriving(Show)                         -- Constructor for a von neumann encoded natural number
 
 data PRED v = Con (Bool)
-            |Subset (TERM v) (TERM v)             -- Constructor for subset of two sets
+            |Subset (TERM v) (TERM v)              -- Constructor for subset of two sets
             | ElementOf (TERM v) (TERM v)          -- Constructor for element of a set
             | Not (PRED v)                         -- Constructor for negation of a predicate
             | And (PRED v) (PRED v)                -- Constructor for conjunction of two predicates
             | Or (PRED v) (PRED v)                 -- Constructor for disjunction of two predicates
             | Implies (PRED v) (PRED v)
-            deriving(Show)         -- Constructor for implication of two predicates
+            deriving(Show)                         -- Constructor for implication of two predicates
 
 
 
@@ -34,28 +33,14 @@ eval env (IntersectionSet t1 t2) = intersectSets (eval env t1) (eval env t2) -- 
 eval env (VarSet x) = case lookup x env  of -- Evaluate a variable to its corresponding set
     Just set -> set
     Nothing -> S []
-eval _ (VN n) = eval vonNeumannEnv (vonNeumann n)                -- Evaluate a von neumann encoded natural number to its corresponding set   
+eval _ (VN n) = eval vonNeumannEnv (vonNeumann n) -- Evaluate a von neumann encoded natural number to its corresponding set   
 
 vonNeumannEnv :: Env Integer Set
-vonNeumannEnv = [(0, S []), (1, S [S []]), (2, S [S [], S [S []]])]
--- possibly better solution
--- eval :: Eq v => Env v Set -> TERM v -> Set
--- eval env = teval
---     where
---         teval  EmptySet = S [] -- Evaluate the empty set to an empty set
---         teval  (SingletonSet t) = teval t
---         teval (UnionSet t1 t2) = unionSets (teval t1) (teval t2) -- Evaluate the union of two sets
---         teval (IntersectionSet t1 t2) = intersectSets (teval t1) (teval t2) -- Evaluate the intersection of two sets
---         teval (VarSet x) = case lookup x env  of -- Evaluate a variable to its corresponding set
---             Just set -> set
---             Nothing -> S []
---         teval (VN n) = teval (vonNeumann n)        
+vonNeumannEnv = [(0, S []), (1, S [S []]), (2, S [S [], S [S []]])] -- not needed(?)
 
-
+-- gets the union or intersection of two sets
 unionSets :: Set -> Set -> Set
 unionSets (S set1) (S set2) = S $ union set1 set2
---unionSets (S set1) (S set2) = S (set1 ++ set2) use union instead of concat? 
-
 
 intersectSets :: Set -> Set -> Set
 intersectSets (S set1) (S set2) = S [x | x <- set1, x `elem` set2]
@@ -83,18 +68,10 @@ elementOf x (S setX) = x `elem` setX
 
 -- show function for sets
 instance Show Set where
---    show :: Set -> String
+--  show :: Set -> String
     show (S []) = "{}"
     show (S [x]) = "{" ++ show x ++ "}"
     show (S (x:xs)) = "{" ++ show x ++ "," ++ show (S xs) ++ "}"
-
-{-
---  von neumann encoding of natural numbers
-vnEnc :: Integer -> Set
-vnEnc n
-    | n == 0 = S [] -- case when n is zero return the empty set
-    | otherwise = unionSets (vnEnc (n - 1)) (S [vnEnc (n - 1)]) -- recursive case (tail rec?)
--}
 
 -- This von neumann function matches the one in the description better!
 vonNeumann :: Integer -> TERM Integer
@@ -113,14 +90,9 @@ claim1 n1 n2 = check envEval (Implies  (Con (n1 <= n2) ) (Subset (VN n1) (VN n2)
 claim2 :: Integer -> Bool
 claim2 n = check envEval (Subset (VN n) (createNumSet n) ) && check envEval (Subset (createNumSet n) (VN n))
 
-
 createNumSet :: Integer -> TERM Integer
 createNumSet 0 = EmptySet
 createNumSet n = UnionSet (createNumSet (n - 1)) (VN (n - 1))
-
-
-
---  claim1 1 2 
 
 
 
