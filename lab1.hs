@@ -36,7 +36,7 @@ eval env (VarSet x) = case lookup x env  of -- Evaluate a variable to its corres
 eval _ (VN n) = eval vonNeumannEnv (vonNeumann n) -- Evaluate a von neumann encoded natural number to its corresponding set   
 
 vonNeumannEnv :: Env Integer Set
-vonNeumannEnv = [(0, S []), (1, S [S []]), (2, S [S [], S [S []]])] -- not needed(?)
+vonNeumannEnv = [(0, S [])]-- not needed(?)
 
 -- gets the union or intersection of two sets
 unionSets :: Set -> Set -> Set
