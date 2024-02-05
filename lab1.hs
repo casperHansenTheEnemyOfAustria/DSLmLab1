@@ -17,10 +17,25 @@ data PRED v = Con (Bool)
             | Or (PRED v) (PRED v)                 -- Constructor for disjunction of two predicates
             | Implies (PRED v) (PRED v)
             deriving(Show)                         -- Constructor for implication of two predicates
+class Equate s where
+    unit :: s
+    (===):: s -> s -> Bool
+
+instance Equate Set where
+    unit = S []
+    (===) a b = checkSetEquality
+
+-- checks if two sets are equal
+checkSetEquality :: Set -> Set -> Bool
+checkSetEquality a b = error "not implemented"
+
+    
+
+newtype Set = S [Set] -- Set is a list of sets
 
 
 
-newtype Set = S [Set] deriving Eq -- Set is a list of sets
+
 
 type Env var dom = [(var,dom)]    -- Environment is a list of pairs of variables and their corresponding domain
 
