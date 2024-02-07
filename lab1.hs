@@ -16,20 +16,17 @@ data PRED v = Con (Bool)
             | And (PRED v) (PRED v)                -- Constructor for conjunction of two predicates
             | Or (PRED v) (PRED v)                 -- Constructor for disjunction of two predicates
             | Implies (PRED v) (PRED v)
+            | Eq (TERM v) (TERM v)
             deriving(Show)                         -- Constructor for implication of two predicates
-class Equate s where
-    unit :: s
-    (===):: s -> s -> Bool
 
-instance Equate Set where
-    unit = S []
-    (===) a b = checkSetEquality
+instance Eq Set where
+    (==) = checkSetEquality
 
 -- checks if two sets are equal
 checkSetEquality :: Set -> Set -> Bool
-checkSetEquality a b = error "not implemented"
+checkSetEquality a b = isSubset a b && isSubset b a
 
-    
+
 
 newtype Set = S [Set] -- Set is a list of sets
 
@@ -45,12 +42,12 @@ eval :: Eq v => Env v Set -> TERM v -> Set
 
 
 eval _ EmptySet = S [] -- Evaluate the empty set to an empty set
-eval env (SingletonSet t) = S[eval env t] 
+eval env (SingletonSet t) = S [eval env t]
 eval env (UnionSet t1 t2) = unionSets (eval env t1) (eval env t2) -- Evaluate the union of two sets
 eval env (IntersectionSet t1 t2) = intersectSets (eval env t1) (eval env t2) -- Evaluate the intersection of two sets
 eval env (VarSet x) = case lookup x env  of -- Evaluate a variable to its corresponding set
     Just set -> set
-    Nothing -> S []
+    Nothing -> error "Variable not found"
 eval _ (VN n) = eval vonNeumannEnv (vonNeumann n) -- Evaluate a von neumann encoded natural number to its corresponding set   
 
 vonNeumannEnv :: Env Integer Set
@@ -73,6 +70,7 @@ check env (And p1 p2) = check env p1 && check env p2
 check env (Or p1 p2) = check env p1 || check env p2
 check env (Implies p1 p2) = not (check env p1) || check env p2
 check _ (Con b) = b
+check env (Eq t1 t2) = eval env t1 == eval env t2
 
 
 
@@ -106,14 +104,21 @@ claim1 :: Integer -> Integer -> Bool
 claim1 n1 n2 = check envEval (Implies  (Con (n1 <= n2) ) (Subset (VN n1) (VN n2)))
 
 
+-- testers
+-- set1 = eval [(1, S [S [], S [S []]])] (UnionSet (SingletonSet (SingletonSet EmptySet)) (SingletonSet EmptySet))
+-- set2 = eval [(1, S [S [], S [S []]])] (UnionSet  (SingletonSet EmptySet) (SingletonSet (SingletonSet EmptySet)))
+
+-- claim3 = set1 == set2
+
+
+
 -- Abstractions
 claim2 :: Integer -> Bool
-claim2 n = check envEval (Subset (VN n) (createNumSet n) ) && check envEval (Subset (createNumSet n) (VN n))
+claim2 n =  check [(1, S[])] (Eq  (vonNeumann n) (createNumSet n))
 
-createNumSet :: Integer -> TERM Integer
+createNumSet :: Integer -> TERM v
 createNumSet 0 = EmptySet
-createNumSet n = UnionSet (createNumSet (n - 1)) (VN (n - 1))
-
+createNumSet n = UnionSet (createNumSet (n - 1)) (SingletonSet (createNumSet (n - 1)))
 
 
 
