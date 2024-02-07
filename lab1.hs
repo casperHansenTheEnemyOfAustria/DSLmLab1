@@ -93,7 +93,7 @@ instance Show Set where
 vonNeumann :: Integer -> TERM Integer
 vonNeumann n
     | n == 0 = EmptySet -- Base case
-    | otherwise = UnionSet (vonNeumann (n - 1)) (SingletonSet (vonNeumann (n - 1)))
+    | otherwise = UnionSet (VN (n - 1)) (SingletonSet (VN (n - 1)))
 
 -- claims 
 
@@ -114,7 +114,7 @@ claim1 n1 n2 = check envEval (Implies  (Con (n1 <= n2) ) (Subset (VN n1) (VN n2)
 
 -- Abstractions
 claim2 :: Integer -> Bool
-claim2 n =  check [(1, S[])] (Eq  (vonNeumann n) (createNumSet n))
+claim2 n =  check [(1, S[])] (Eq  (VN n) (createNumSet n))
 
 createNumSet :: Integer -> TERM v
 createNumSet 0 = EmptySet
