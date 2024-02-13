@@ -114,9 +114,9 @@ claim1 n1 n2 = check envEval (Implies  (Con (n1 <= n2) ) (Subset (VN n1) (VN n2)
 
 -- Abstractions
 claim2 :: Integer -> Bool
-claim2 n =  (eval vonNeumannEnv (VN n)== (createNumSet n))
+claim2 n =  eval vonNeumannEnv (VN n) == createNumSet n
 
-
+-- Helper function for claim2
 createNumSet :: Integer -> Set
 createNumSet n = S $ map (eval vonNeumannEnv . VN) [0..(n-1)]
 
