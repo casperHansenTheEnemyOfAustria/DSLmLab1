@@ -116,14 +116,11 @@ claim1 n1 n2 = check envEval (Implies  (Con (n1 <= n2) ) (Subset (VN n1) (VN n2)
 claim2 :: Integer -> Bool
 claim2 n =  (eval vonNeumannEnv (VN n)== (createNumSet n))
 
--- createNumSet :: Integer -> TERM v
 
--- createNumSet 0 = EmptySet
 createNumSet :: Integer -> Set
-createNumSet n = set
-    where set = S $ map (eval vonNeumannEnv . VN) [0..(n-1)]
+createNumSet n = S $ map (eval vonNeumannEnv . VN) [0..(n-1)]
 
-
+ 
 
 
 
